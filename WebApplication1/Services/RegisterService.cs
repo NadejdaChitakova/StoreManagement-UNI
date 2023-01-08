@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Data;
 using WebApplication1.Models.Domain;
 using WebApplication1.Models.Entity;
@@ -8,32 +9,47 @@ namespace WebApplication1.Services
 {
     public class RegisterService : IRegister
     {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ApplicationDBContext _applicationDBContext;
-        private readonly IMapper _mapper;
-        public RegisterService(ApplicationDBContext applicationDBContext, IMapper mapper)
+
+        public RegisterService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ApplicationDBContext applicationDBContext)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
             _applicationDBContext = applicationDBContext;
-            _mapper = mapper;
         }
 
-        public async Task RegisterAsync(RegisterDTO registerDTO)
+        public async Task<StatusCodeResult> RegisterAsync(RegisterDTO registerDTO)
         {
-            var user = new User
+            if (registerDTO.UserName == null || registerDTO.PasswordHash == null || registerDTO.Email == null)
+            {
+                return new BadRequestResult();
+            }
+
+            var userInDB = _applicationDBContext.Users.Where(x => x.Email == registerDTO.Email);
+
+            if (userInDB == null)
+            {
+                return new NotFoundResult();
+            }
+            var user = new User // TODO: use automapper
             {
                 Id = registerDTO.Id,
-                UserName = registerDTO.Username,
+                UserName = registerDTO.UserName,
                 Email = registerDTO.Email,
-                PasswordHash = registerDTO.Password,
+                PasswordHash = registerDTO.PasswordHash,
                 Phone = registerDTO.Phone
             };
 
-            if (registerDTO.Username == null || registerDTO.Password == null || registerDTO.Email == null)
+            var result = await _userManager.CreateAsync(user, user.PasswordHash);
+            var statusCode = StatusCodes.Status400BadRequest;
+            if (result.Succeeded)
             {
-                return;
+                statusCode = StatusCodes.Status200OK;
+                await _signInManager.SignInAsync(user, false);
             }
-
-            await _applicationDBContext.Users.AddAsync(user);
-            // await _applicationDBContext.SaveChangesAsync();
+            return new StatusCodeResult(statusCode);
         }
     }
 }

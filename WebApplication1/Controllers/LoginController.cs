@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models.Entity;
 using WebApplication1.Models;
 using WebApplication1.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNet.Identity;
+using WebApplication1.Models.Domain;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace WebApplication1.Controllers
 {
@@ -10,10 +15,10 @@ namespace WebApplication1.Controllers
     {
         private readonly ILogin _loginService;
         private readonly IMapper _mapper;
-        public LoginController(ILogin loginService, IMapper mapper)
+
+        public LoginController(ILogin loginService)
         {
             _loginService = loginService;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -23,16 +28,27 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(AddUserVM addUserVM) //TODO: MAKE LOGGIN TO WORK
+        public async Task<IActionResult> Login(LoginVM model) //TODO: MAKE LOGGIN TO WORK
         {
-            var user = new LoginDTO
+            if (ModelState.IsValid)
             {
-                Username = addUserVM.Username,
-                Password = addUserVM.Password
-            };
+                var user = new LoginDTO
+                {
+                    Email = model.Email,
+                    Password = model.Password,
+                };
+                var result = await _loginService.Login(user);
 
-            await _loginService.Login(user);
-            return RedirectToAction(actionName: "Index", controllerName: "Home");
+                if (result.StatusCode == StatusCodes.Status200OK)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
+                }
+            }
+            return View(model);
         }
     }
 }

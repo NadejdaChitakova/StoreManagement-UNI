@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Data;
 using WebApplication1.Models.Domain;
 using WebApplication1.Models.Entity;
@@ -8,28 +10,35 @@ namespace WebApplication1.Services
 {
     public class LoginService : ILogin
     {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ApplicationDBContext _applicationDBContext;
-        private readonly IMapper _mapper;
-        public static string loggedUser;
-        public LoginService(ApplicationDBContext applicationDBContext, IMapper mapper)
+        public static string loggedUser = null;
+        public LoginService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ApplicationDBContext applicationDBContext)
         {
+            _userManager = userManager;
+            _signInManager = signInManager;
             _applicationDBContext = applicationDBContext;
-            _mapper = mapper;
         }
 
-        public async Task Login(LoginDTO loginDTO)
+        public async Task<StatusCodeResult> Login(LoginDTO loginDTO)
         {
-            if (loginDTO.Username == null || loginDTO.Password == null)
+            if (loginDTO.Email == null || loginDTO.Password == null)
             {
-                return;
+                return new BadRequestResult();
             }
-            var user = new User();// _applicationDBContext.Users.Where(x => x.UserName == loginDTO.Username && x.Password == loginDTO.Password).FirstOrDefault();
+            var userInDb = _applicationDBContext.Users.Where(x => x.UserName == loginDTO.Email).FirstOrDefault();
 
-            if (user == null)
+            var result = await _signInManager.PasswordSignInAsync(userInDb,
+                           userInDb.PasswordHash, true, true);
+            var statusCode = StatusCodes.Status200OK;
+
+            if (userInDb == null)
             {
-                return;
+                return new NotFoundResult();
             }
-            loggedUser = user.UserName;
+
+            return new StatusCodeResult(statusCode);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models;
 using WebApplication1.Models.Domain;
 using WebApplication1.Models.Entity;
@@ -10,13 +8,10 @@ namespace WebApplication1.Controllers
 {
     public class RegistrationController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        public RegistrationController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        private readonly IRegister _register;
+        public RegistrationController(IRegister register)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _register = register;
         }
 
         [HttpGet]
@@ -24,6 +19,7 @@ namespace WebApplication1.Controllers
         {
             return View();
         }
+
         [HttpGet]
         public IActionResult Add()
         {
@@ -33,9 +29,9 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddUserVM addUserVM)
         {
-            if (ModelState.IsValid)
+            if (ModelState.IsValid) // TODO: show error msg when username exist in db
             {
-                var user = new User
+                var user = new RegisterDTO
                 {
                     Id = new Guid(),
                     Email = addUserVM.Email,
@@ -44,12 +40,12 @@ namespace WebApplication1.Controllers
                     Phone = addUserVM.Phone,
                 };
 
-                var result = await _userManager.CreateAsync(user, user.PasswordHash);
-                if (result.Succeeded)
+                var result = await _register.RegisterAsync(user);
+
+                if (result.StatusCode.Equals(StatusCodes.Status200OK))
                 {
-                    await _signInManager.SignInAsync(user, false);
+                    return RedirectToAction("RegisterSuccessfuly", "Registration", new { area = "" });
                 }
-                return RedirectToAction("RegisterSuccessfuly", "Registration", new { area = "" });
             }
             return View();
         }

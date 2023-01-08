@@ -1,9 +1,10 @@
-﻿using WebApplication1.Models.Entity;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.Models.Entity;
 
 namespace WebApplication1.Services.Interfaces
 {
     public interface ILogin
     {
-        Task Login(LoginDTO loginDTO);
+        Task<StatusCodeResult> Login(LoginDTO loginDTO);
     }
 }

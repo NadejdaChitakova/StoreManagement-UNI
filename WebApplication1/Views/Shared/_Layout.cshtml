@@ -1,7 +1,7 @@
 ﻿@using WebApplication1.Services;
-@{
-    var user = LoginService.loggedUser;
-}
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,29 +23,27 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-
-                        @if (user != null)
-                        {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                            </li>
-                        
-                        <li class="nav-item">
-                            <p>@user</p>
-                        </li>
-                        }
-                        else
-                        {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Registration" asp-action="Add">Register</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Login">Login</a>
-                        </li>
-                            
+                        @if (SignInManager.IsSignedIn(User))
+                            {
+                                
+                                 <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                 </li>
+                                 <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                 </li>
+                                 <li class="nav-item d-flex justify-content-end">
+                                <a class="btn btn-primary" asp-area="" asp-controller="Logout" asp-action="OnPostLogOutAsync">Logout</a>
+                                 </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Registration" asp-action="Add">Register</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Login">Login</a>
+                                </li> 
                         }
 
                     </ul>
