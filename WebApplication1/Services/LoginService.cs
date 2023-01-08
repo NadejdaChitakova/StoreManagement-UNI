@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using WebApplication1.Data;
+using WebApplication1.Models.Domain;
 using WebApplication1.Models.Entity;
 using WebApplication1.Services.Interfaces;
 
@@ -9,7 +10,7 @@ namespace WebApplication1.Services
     {
         private readonly ApplicationDBContext _applicationDBContext;
         private readonly IMapper _mapper;
-        public static object? loggedUser;
+        public static string loggedUser;
         public LoginService(ApplicationDBContext applicationDBContext, IMapper mapper)
         {
             _applicationDBContext = applicationDBContext;
@@ -22,12 +23,13 @@ namespace WebApplication1.Services
             {
                 return;
             }
-           var user =  _applicationDBContext.Users.Where(x => x.Username == loginDTO.Username && x.Password == loginDTO.Password).FirstOrDefault();
-           
-           if (user == null) {
-               return;
-           }
-           loggedUser= user;
+            var user = new User();// _applicationDBContext.Users.Where(x => x.UserName == loginDTO.Username && x.Password == loginDTO.Password).FirstOrDefault();
+
+            if (user == null)
+            {
+                return;
+            }
+            loggedUser = user.UserName;
         }
     }
 }

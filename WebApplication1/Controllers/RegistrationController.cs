@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models;
 using WebApplication1.Models.Domain;
@@ -9,14 +10,20 @@ namespace WebApplication1.Controllers
 {
     public class RegistrationController : Controller
     {
-        private readonly IRegister _registerService;
-        private readonly IMapper _mapper;
-        public RegistrationController(IRegister registerService, IMapper mapper)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+
+        public RegistrationController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
-            _registerService= registerService;
-            _mapper= mapper;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
+        [HttpGet]
+        public IActionResult RegisterSuccessfuly()
+        {
+            return View();
+        }
         [HttpGet]
         public IActionResult Add()
         {
@@ -26,17 +33,25 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddUserVM addUserVM)
         {
-            var user = new RegisterDTO
+            if (ModelState.IsValid)
             {
-                Id = new Guid(),
-                Email = addUserVM.Email,
-                Username = addUserVM.Username,
-                Password = addUserVM.Password,
-                Phone = addUserVM.Phone,
-            };
-           
-            await _registerService.RegisterAsync(user);
-            return RedirectToAction("Add");
+                var user = new User
+                {
+                    Id = new Guid(),
+                    Email = addUserVM.Email,
+                    UserName = addUserVM.Username,
+                    PasswordHash = addUserVM.Password,
+                    Phone = addUserVM.Phone,
+                };
+
+                var result = await _userManager.CreateAsync(user, user.PasswordHash);
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, false);
+                }
+                return RedirectToAction("RegisterSuccessfuly", "Registration", new { area = "" });
+            }
+            return View();
         }
     }
 }

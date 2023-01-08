@@ -21,19 +21,19 @@ namespace WebApplication1.Services
             var user = new User
             {
                 Id = registerDTO.Id,
-                Username = registerDTO.Username,
+                UserName = registerDTO.Username,
                 Email = registerDTO.Email,
-                Password = registerDTO.Password,
+                PasswordHash = registerDTO.Password,
                 Phone = registerDTO.Phone
             };
 
-            if (registerDTO.Username == null || registerDTO.Password == null  || registerDTO.Email == null)
+            if (registerDTO.Username == null || registerDTO.Password == null || registerDTO.Email == null)
             {
                 return;
             }
 
             await _applicationDBContext.Users.AddAsync(user);
-            await _applicationDBContext.SaveChangesAsync();
+            // await _applicationDBContext.SaveChangesAsync();
         }
     }
 }

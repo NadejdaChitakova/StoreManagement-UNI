@@ -17,13 +17,13 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public IActionResult Add()
+        public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(AddUserVM addUserVM)
+        public async Task<IActionResult> Login(AddUserVM addUserVM) //TODO: MAKE LOGGIN TO WORK
         {
             var user = new LoginDTO
             {
@@ -32,7 +32,7 @@ namespace WebApplication1.Controllers
             };
 
             await _loginService.Login(user);
-            return RedirectToAction("Add");
+            return RedirectToAction(actionName: "Index", controllerName: "Home");
         }
     }
 }

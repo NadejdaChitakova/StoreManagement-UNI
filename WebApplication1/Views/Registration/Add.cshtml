@@ -1,22 +1,27 @@
-﻿@model WebApplication1.Models.AddUserVM
+﻿@using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
+@model WebApplication1.Models.AddUserVM
+
 
 <form method="post" action="Add">
     <div class="form-group">
         <label for="">Email</label>
-        <input type="email" class="form-control" aria-describedby="emailHelp" placeholder="Enter email" asp-for="Email">
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        <input type="email" class="form-control" aria-describedby="emailHelp" asp-for="Email">
+        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="">Username</label>
-        <input type="text" class="form-control" aria-describedby="username" placeholder="Enter username" asp-for="Username">
+        <input type="text" class="form-control" aria-describedby="username" asp-for="Username">
+        @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="">Password</label>
-        <input type="password" class="form-control" aria-describedby="password" placeholder="Enter password" asp-for="Password">
+        <input type="password" class="form-control" aria-describedby="password" asp-for="Password">
+        @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
     </div>
     <div class="form-group">
         <label for="">Phone number</label>
-        <input type="tel" class="form-control" aria-describedby="phoneNumber" placeholder="Enter phone number" asp-for="Phone">
+        <input type="tel" class="form-control" aria-describedby="phoneNumber" asp-for="Phone">
+        @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
