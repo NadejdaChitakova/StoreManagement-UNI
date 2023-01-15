@@ -30,7 +30,7 @@ namespace WebApplication1.Services
             var userInDb = _applicationDBContext.Users.Where(x => x.UserName == loginDTO.Email).FirstOrDefault();
 
             var result = await _signInManager.PasswordSignInAsync(userInDb,
-                           userInDb.PasswordHash, true, true);
+                           userInDb.PasswordHash, true, true); //TODO: CHECK THIS
             await _signInManager.SignInAsync(userInDb, true);
             var statusCode = StatusCodes.Status200OK;
 

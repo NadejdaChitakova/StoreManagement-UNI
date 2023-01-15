@@ -1,20 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using WebApplication1.Models.Entity;
 using WebApplication1.Models;
+using WebApplication1.Models.Entity;
 using WebApplication1.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNet.Identity;
-using WebApplication1.Models.Domain;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace WebApplication1.Controllers
 {
     public class LoginController : Controller
     {
         private readonly ILogin _loginService;
-        private readonly IMapper _mapper;
+        //private readonly IMapper _mapper;
 
         public LoginController(ILogin loginService)
         {

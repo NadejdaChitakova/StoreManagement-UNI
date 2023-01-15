@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Models;
@@ -42,6 +43,8 @@ namespace WebApplication1.Controllers
         // GET: Products/Create
         public IActionResult Create()
         {
+            List<Category> categories = _context.Category.ToList();
+            ViewBag.ListOfCategories = new SelectList(categories, "Id", "Name");
             return View();
         }
 
@@ -50,8 +53,9 @@ namespace WebApplication1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,BuyPrice,SellPrice,PathFile,CategoryId,ProductCount, ProductCode")] ProductVM product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,BuyPrice,SellPrice,Picture,CategoryId,ProductCount, ProductCode")] ProductVM product)
         {
+
             if (ModelState.IsValid)
             {
                 //product.Id = Guid.NewGuid();
@@ -83,7 +87,7 @@ namespace WebApplication1.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Description,BuyPrice,SellPrice,PathFile,CategoryId")] Product product)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Description,BuyPrice,SellPrice,Picture,CategoryId")] Product product)
         {
             if (id != product.Id)
             {

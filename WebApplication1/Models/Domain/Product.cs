@@ -1,4 +1,6 @@
-﻿namespace WebApplication1.Models.Domain
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace WebApplication1.Models.Domain
 {
     public class Product
     {
@@ -8,7 +10,8 @@
         public decimal BuyPrice { get; set; }
         public decimal SellPrice { get; set; }
         public int ProductCount { get; set; }
-        public string PathFile { get; set; }
+        [NotMapped]
+        public IFormFile Picture { get; set; }
         public string CategoryId { get; set; }
         public decimal ProductCode { get; set; }
     }
