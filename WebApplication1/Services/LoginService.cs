@@ -31,6 +31,7 @@ namespace WebApplication1.Services
 
             var result = await _signInManager.PasswordSignInAsync(userInDb,
                            userInDb.PasswordHash, true, true);
+            await _signInManager.SignInAsync(userInDb, true);
             var statusCode = StatusCodes.Status200OK;
 
             if (userInDb == null)

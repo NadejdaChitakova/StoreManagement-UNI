@@ -41,7 +41,7 @@ namespace WebApplication1.Controllers
 
                 if (result.StatusCode == StatusCodes.Status200OK)
                 {
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Products", new { area = "" });
                 }
                 else
                 {
