@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Drawing;
 
-namespace WebApplication1.Models.Domain
+namespace WebApplication1.Models.Entity
 {
-    public class Product
+    public class ProductDTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -15,5 +15,6 @@ namespace WebApplication1.Models.Domain
         public string PictureFormat { get; set; }
         public string CategoryId { get; set; }
         public decimal ProductCode { get; set; }
+        public Image ImageImg { get; set; }
     }
 }

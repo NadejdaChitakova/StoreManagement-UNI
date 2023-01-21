@@ -1,4 +1,4 @@
-﻿@model WebApplication1.Models.Domain.Product
+﻿@model WebApplication1.Models.ProductVM
 
 @{
     ViewData["Title"] = "Edit";
@@ -34,8 +34,11 @@
                 <span asp-validation-for="SellPrice" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <img src="@Model.ImageImage" width="180" height="80"></img>
                 <label asp-for="Picture" class="control-label"></label>
                 <input asp-for="Picture" class="form-control" />
+
+                
                 <span asp-validation-for="Picture" class="text-danger"></span>
             </div>
             <div class="form-group">

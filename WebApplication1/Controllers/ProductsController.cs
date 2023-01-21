@@ -1,19 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
+using System.Drawing;
+using System.Drawing.Imaging;
 using WebApplication1.Data;
 using WebApplication1.Models;
 using WebApplication1.Models.Domain;
+using WebApplication1.Models.Entity;
+using WebApplication1.Services.Interfaces;
 
 namespace WebApplication1.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ApplicationDBContext _context;
+        private readonly IProduct _product;
 
-        public ProductsController(ApplicationDBContext context)
+        public ProductsController(ApplicationDBContext context, IProduct product)
         {
             _context = context;
+            _product = product;
         }
 
         // GET: Products
@@ -49,37 +57,35 @@ namespace WebApplication1.Controllers
         }
 
         // POST: Products/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,BuyPrice,SellPrice,Picture,CategoryId,ProductCount, ProductCode")] ProductVM product)
+        public async Task<IActionResult> Create(ProductVM product)
         {
-
             if (ModelState.IsValid)
             {
-                //product.Id = Guid.NewGuid();
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ProductDTO productDTO = MapVmToDTO(product);
+                var statusCodeResult = await _product.CreateProduct(productDTO);
+
+                if (statusCodeResult.StatusCode == StatusCodes.Status201Created)
+                {
+                    return RedirectToAction(nameof(Index));
+                }//TODO : else return error code
             }
             return View(product);
         }
 
         // GET: Products/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Edit(Guid id)
         {
-            if (id == null || _context.Product == null)
+            var product = _product.FindProductById(id);
+
+            if (id == null || product == null || product.Id == null)
             {
                 return NotFound();
             }
 
-            var product = await _context.Product.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return View(product);
+            return View(MapEntityToVM(product));
         }
 
         // POST: Products/Edit/5
@@ -158,5 +164,51 @@ namespace WebApplication1.Controllers
         {
             return _context.Product.Any(e => e.Id == id);
         }
+        private ProductDTO MapVmToDTO(ProductVM productVM)
+        {
+            var memoryStream = new MemoryStream();
+            productVM.Picture.CopyTo(memoryStream);
+
+            return new ProductDTO()
+            {
+                Id = productVM.Id,
+                Name = productVM.Name,
+                Description = productVM.Description,
+                BuyPrice = productVM.BuyPrice,
+                SellPrice = productVM.SellPrice,
+                CategoryId = productVM.CategoryId,
+                PictureName = productVM.Picture.FileName,
+                Picture = memoryStream.ToArray(),
+                PictureFormat = productVM.Picture.ContentType,
+                ProductCode = productVM.ProductCode,
+                ProductCount = productVM.ProductCount
+            };
+        }
+        private ProductVM MapEntityToVM(ProductDTO dto)
+        {
+            //var picture = _product.ReadFileFromDB(dto.PictureName, dto.Picture, dto.PictureFormat);
+            //var img = _product.ConvertImageFromIForm(dto.Picture);
+            var product = new ProductVM()
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                BuyPrice = dto.BuyPrice,
+                SellPrice = dto.SellPrice,
+                CategoryId = dto.CategoryId,
+                ProductCode = dto.ProductCode,
+                ProductCount = dto.ProductCount,
+                ImageImage = "data:image/jpeg;base64," + Convert.ToBase64String(dto.Picture)
+            };
+
+            return product;
+        }
+        //public ActionResult GetImg(ProductDTO dto)
+        //{
+        //    using (var ms = new MemoryStream(dto.Picture))
+        //    {
+        //        return Image.FromStream(ms);
+        //    }
+        //}
     }
 }
