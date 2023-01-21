@@ -23,7 +23,6 @@ namespace WebApplication1.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var products = new List<Product>();
             List<SelectListItem> selectListItems = new List<SelectListItem>()
             {
                 new SelectListItem { Value = "1", Text = "all" },
@@ -33,15 +32,20 @@ namespace WebApplication1.Controllers
             };
             ViewBag.Categories = selectListItems;
 
-            products = _product.GetProducts();
+            var products = _product.GetProducts().ToList();
+            var productVms = new List<ProductVM>();
+            foreach (var item in products)
+            {
+                productVms.Add(MapEntityToVM(item));
+            }
 
-            return View(products);
+            return View(productVms);
         }
 
         [HttpPost]
         public async Task<IActionResult> Index(string Categories, int uniqueCode)
         {
-            var products = new List<Product>();
+            var products = _product.GetProductByCategory(Categories).ToList();
             List<SelectListItem> selectListItems = new List<SelectListItem>()
             {
                 new SelectListItem { Value = "1", Text = "all" },
@@ -51,14 +55,18 @@ namespace WebApplication1.Controllers
             };
             ViewBag.Categories = selectListItems;
 
-            products = _product.GetProductByCategory(Categories);
+            var productVms = new List<ProductVM>();
+            foreach (var item in products)
+            {
+                productVms.Add(MapEntityToVM(item));
+            }
 
             if (uniqueCode != null)
             {
-                products = products.Where(x => x.ProductCode == uniqueCode).ToList();
+                productVms = productVms.Where(x => x.ProductCode == uniqueCode).ToList();
             }
 
-            return View(products);
+            return View(productVms);
         }
 
         public async Task<IActionResult> Details(Guid id)
@@ -97,8 +105,16 @@ namespace WebApplication1.Controllers
             return View(product);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
+            List<SelectListItem> selectListItems = new List<SelectListItem>()
+            {
+                new SelectListItem { Value = "CBFB62EF-181A-497E-A7D7-3262DC68EBE3", Text = "building materials" },
+                new SelectListItem { Value = "C96D7B4F-D7C1-4C54-AD20-3866764F9758", Text = "groceries" },
+                new SelectListItem { Value = "CC67C818-2456-466B-96DB-6A2BAE530DE3", Text = "stationery" },
+            };
+            ViewBag.Categories = selectListItems;
             var product = _product.FindProductById(id);
 
             if (id == null || product == null || product.Id == null)
@@ -111,77 +127,39 @@ namespace WebApplication1.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, ProductVM product)
+        public async Task<IActionResult> Edit(Guid id, ProductVM product, string Categories)
         {
+            List<SelectListItem> selectListItems = new List<SelectListItem>()
+            {
+                new SelectListItem { Value = "CBFB62EF-181A-497E-A7D7-3262DC68EBE3", Text = "building materials" },
+                new SelectListItem { Value = "C96D7B4F-D7C1-4C54-AD20-3866764F9758", Text = "groceries" },
+                new SelectListItem { Value = "CC67C818-2456-466B-96DB-6A2BAE530DE3", Text = "stationery" },
+            };
+            ViewBag.Categories = selectListItems;
             if (id != product.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _product.UpdateProduct(MapVmToDTO(product));
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProductExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(product);
+            _product.UpdateProduct(MapVmToDTOEditForm(product, id.ToString()));
+
+            return RedirectToAction(nameof(Index));
+
         }
 
         // GET: Products/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             if (id == null || _context.Product == null)
             {
                 return NotFound();
             }
 
-            var product = await _context.Product
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
+            _product.DeleteProduct(id);
 
-            return View(product);
-        }
-
-        // POST: Products/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            if (_context.Product == null)
-            {
-                return Problem("Entity set 'ApplicationDBContext.Product'  is null.");
-            }
-            var product = await _context.Product.FindAsync(id);
-            if (product != null)
-            {
-                _context.Product.Remove(product);
-            }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(Guid id)
-        {
-            return _context.Product.Any(e => e.Id == id);
-        }
         private ProductDTO MapVmToDTO(ProductVM productVM)
         {
             var memoryStream = new MemoryStream();
@@ -202,6 +180,20 @@ namespace WebApplication1.Controllers
                 ProductCount = productVM.ProductCount
             };
         }
+        private ProductDTO MapVmToDTOEditForm(ProductVM productVM, string id)
+        {
+            return new ProductDTO()
+            {
+                Id = productVM.Id,
+                Name = productVM.Name,
+                Description = productVM.Description,
+                BuyPrice = productVM.BuyPrice,
+                SellPrice = productVM.SellPrice,
+                CategoryId = id,
+                ProductCode = productVM.ProductCode,
+                ProductCount = productVM.ProductCount
+            };
+        }
         private ProductVM MapEntityToVM(ProductDTO dto)
         {
             var product = new ProductVM()
@@ -218,16 +210,6 @@ namespace WebApplication1.Controllers
             };
 
             return product;
-        }
-
-        public IActionResult Create(string id = null)
-        {
-            List<Category> categories = _context.Category.ToList();
-            if (id != null)
-            {
-                ViewBag.ListOfCategories = new SelectList(categories, "Id", "Name");
-            }
-            return View();
         }
     }
 }

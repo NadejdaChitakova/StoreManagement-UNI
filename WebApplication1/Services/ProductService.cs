@@ -15,6 +15,47 @@ namespace WebApplication1.Services
         {
             _applicationDBContext = applicationDBContext;
         }
+
+        public List<ProductDTO> GetProducts()
+        {
+            var products = _applicationDBContext.Product.ToList();
+            var productDTOs = new List<ProductDTO>();
+            foreach (var product in products)
+            {
+                productDTOs.Add(MapEntityToDTO(product));
+            }
+            return productDTOs;
+        }
+
+        public ProductDTO FindProductById(Guid productId)
+        {
+            var product = _applicationDBContext.Product.Where(x => x.Id == productId).SingleOrDefault();
+            return MapEntityToDTO(product);
+        }
+        public List<ProductDTO> GetProductByCategory(string categoryId)
+        {
+            if (categoryId.ToUpper().Equals("ALL"))
+            {
+                var product = _applicationDBContext.Product.ToList();
+                var productDTO = new List<ProductDTO>();
+                foreach (var item in product)
+                {
+                    MapEntityToDTO(item);
+                }
+                return productDTO;
+            }
+
+            var products = _applicationDBContext.Product.Where(x => x.CategoryId == categoryId.ToUpper()).ToList();
+            var productDTOs = new List<ProductDTO>();
+
+            foreach (var item in products)
+            {
+                MapEntityToDTO(item);
+            }
+
+            return productDTOs;
+        }
+
         public async Task<StatusCodeResult> CreateProduct(ProductDTO productDTO)
         {
             var codeIsUnique = _applicationDBContext.Product.Where(x => x.ProductCode.Equals(productDTO.ProductCode)).SingleOrDefault();
@@ -32,15 +73,26 @@ namespace WebApplication1.Services
             return new StatusCodeResult(StatusCodes.Status201Created);
         }
 
-        public ProductDTO FindProductById(Guid productId)
+        public void DeleteProduct(Guid productId)
         {
-            var product = _applicationDBContext.Product.Where(x => x.Id == productId).SingleOrDefault();
-            return MapEntityToDTO(product);
+            var product = _applicationDBContext.Product.Where(x => x.Id == productId).FirstOrDefault();
+            _applicationDBContext.Product.Remove(product);
+            _applicationDBContext.SaveChanges();
         }
 
         public void UpdateProduct(ProductDTO productDTO)
         {
-            _applicationDBContext.Product.Update(MapDTOToEntity(productDTO));
+            var oldProduct = _applicationDBContext.Product.Where(x => x.Id == productDTO.Id).SingleOrDefault();
+            var categoryId = _applicationDBContext.Category.Where(x => x.Id.ToString() == productDTO.CategoryId).Select(x => x.Id).FirstOrDefault();
+            oldProduct.Name = productDTO.Name;
+            oldProduct.Description = productDTO.Description;
+            oldProduct.SellPrice = productDTO.SellPrice;
+            oldProduct.BuyPrice = productDTO.BuyPrice;
+            oldProduct.ProductCode = productDTO.ProductCode;
+            oldProduct.CategoryId = categoryId.ToString();
+            oldProduct.ProductCount = productDTO.ProductCount;
+            _applicationDBContext.Product.Update(oldProduct);
+            _applicationDBContext.SaveChanges();
         }
 
         public IFormFile ReadFileFromDB(string PictureName, byte[] Picture, string PictureFormat)
@@ -77,6 +129,7 @@ namespace WebApplication1.Services
             }
 
         }
+
         private Product MapDTOToEntity(ProductDTO dto)
         {
             return new Product()
@@ -113,19 +166,5 @@ namespace WebApplication1.Services
             };
         }
 
-        public List<Product> GetProductByCategory(string categoryId)
-        {
-            if (categoryId.ToUpper().Equals("ALL"))
-            {
-                return _applicationDBContext.Product.ToList();
-            }
-
-            return _applicationDBContext.Product.Where(x => x.CategoryId == categoryId.ToUpper()).ToList();
-        }
-
-        List<Product> IProduct.GetProducts()
-        {
-            return _applicationDBContext.Product.ToList();
-        }
     }
 }

@@ -7,12 +7,13 @@ namespace WebApplication1.Services.Interfaces
 {
     public interface IProduct
     {
-        Task<StatusCodeResult> CreateProduct(ProductDTO productDTO);
+        List<ProductDTO> GetProducts();
+        List<ProductDTO> GetProductByCategory(string categoryId);
         ProductDTO FindProductById(Guid productId);
-        IFormFile ReadFileFromDB(string PictureName, byte[] Picture, string PictureFormat);
-        Task<Image> ConvertImageFromIForm(byte[] arr);
+        Task<StatusCodeResult> CreateProduct(ProductDTO productDTO);
+        void DeleteProduct(Guid productId);
         void UpdateProduct(ProductDTO productDTO);
-        List<Product> GetProductByCategory(string categoryId);
-        List<Product> GetProducts();
+        Task<Image> ConvertImageFromIForm(byte[] arr);
+        IFormFile ReadFileFromDB(string PictureName, byte[] Picture, string PictureFormat);
     }
 }
