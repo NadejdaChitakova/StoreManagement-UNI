@@ -1,14 +1,17 @@
 ﻿@model IEnumerable<WebApplication1.Models.Domain.Product>
 
-@{
-    ViewData["Title"] = "Index";
-}
-
 <h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+ <form method="post" asp-controller="Products" asp-action="Index">
+   <div class="form-group">
+        @Html.DropDownList("Categories")
+        Code: <input type="text" name="uniqueCode" />
+        <input type="submit" value="Filter" />
+    </div>
 <table class="table">
     <thead>
         <tr>
@@ -57,3 +60,4 @@
 }
     </tbody>
 </table>
+</form>

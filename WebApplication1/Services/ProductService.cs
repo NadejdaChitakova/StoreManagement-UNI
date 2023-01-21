@@ -1,14 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Drawing;
-using System.Net.Mime;
-using System.Xml.Linq;
 using WebApplication1.Data;
-using WebApplication1.Models;
 using WebApplication1.Models.Domain;
 using WebApplication1.Models.Entity;
 using WebApplication1.Services.Interfaces;
@@ -44,6 +36,11 @@ namespace WebApplication1.Services
         {
             var product = _applicationDBContext.Product.Where(x => x.Id == productId).SingleOrDefault();
             return MapEntityToDTO(product);
+        }
+
+        public void UpdateProduct(ProductDTO productDTO)
+        {
+            _applicationDBContext.Product.Update(MapDTOToEntity(productDTO));
         }
 
         public IFormFile ReadFileFromDB(string PictureName, byte[] Picture, string PictureFormat)
@@ -91,7 +88,7 @@ namespace WebApplication1.Services
                 SellPrice = dto.SellPrice,
                 CategoryId = dto.CategoryId,
                 PictureName = dto.PictureName,
-                //Picture = dto.Picture, link to file (url)
+                Picture = dto.Picture,
                 PictureFormat = dto.PictureFormat,
                 ProductCode = dto.ProductCode,
                 ProductCount = dto.ProductCount
@@ -114,6 +111,21 @@ namespace WebApplication1.Services
                 ProductCode = product.ProductCode,
                 ProductCount = product.ProductCount
             };
+        }
+
+        public List<Product> GetProductByCategory(string categoryId)
+        {
+            if (categoryId.ToUpper().Equals("ALL"))
+            {
+                return _applicationDBContext.Product.ToList();
+            }
+
+            return _applicationDBContext.Product.Where(x => x.CategoryId == categoryId.ToUpper()).ToList();
+        }
+
+        List<Product> IProduct.GetProducts()
+        {
+            return _applicationDBContext.Product.ToList();
         }
     }
 }

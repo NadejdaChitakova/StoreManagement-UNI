@@ -1,10 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
-using System.Drawing;
-using System.Drawing.Imaging;
 using WebApplication1.Data;
 using WebApplication1.Models;
 using WebApplication1.Models.Domain;
@@ -24,13 +20,47 @@ namespace WebApplication1.Controllers
             _product = product;
         }
 
-        // GET: Products
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Product.ToListAsync());
+            var products = new List<Product>();
+            List<SelectListItem> selectListItems = new List<SelectListItem>()
+            {
+                new SelectListItem { Value = "1", Text = "all" },
+                new SelectListItem { Value = "CBFB62EF-181A-497E-A7D7-3262DC68EBE3", Text = "building materials" },
+                new SelectListItem { Value = "C96D7B4F-D7C1-4C54-AD20-3866764F9758", Text = "groceries" },
+                new SelectListItem { Value = "CC67C818-2456-466B-96DB-6A2BAE530DE3", Text = "stationery" },
+            };
+            ViewBag.Categories = selectListItems;
+
+            products = _product.GetProducts();
+
+            return View(products);
         }
 
-        // GET: Products/Details/5
+        [HttpPost]
+        public async Task<IActionResult> Index(string Categories, int uniqueCode)
+        {
+            var products = new List<Product>();
+            List<SelectListItem> selectListItems = new List<SelectListItem>()
+            {
+                new SelectListItem { Value = "1", Text = "all" },
+                new SelectListItem { Value = "CBFB62EF-181A-497E-A7D7-3262DC68EBE3", Text = "building materials" },
+                new SelectListItem { Value = "C96D7B4F-D7C1-4C54-AD20-3866764F9758", Text = "groceries" },
+                new SelectListItem { Value = "CC67C818-2456-466B-96DB-6A2BAE530DE3", Text = "stationery" },
+            };
+            ViewBag.Categories = selectListItems;
+
+            products = _product.GetProductByCategory(Categories);
+
+            if (uniqueCode != null)
+            {
+                products = products.Where(x => x.ProductCode == uniqueCode).ToList();
+            }
+
+            return View(products);
+        }
+
         public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null || _context.Product == null)
@@ -48,15 +78,6 @@ namespace WebApplication1.Controllers
             return View(product);
         }
 
-        // GET: Products/Create
-        public IActionResult Create()
-        {
-            List<Category> categories = _context.Category.ToList();
-            ViewBag.ListOfCategories = new SelectList(categories, "Id", "Name");
-            return View();
-        }
-
-        // POST: Products/Create
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -75,7 +96,6 @@ namespace WebApplication1.Controllers
             return View(product);
         }
 
-        // GET: Products/Edit/5
         public async Task<IActionResult> Edit(Guid id)
         {
             var product = _product.FindProductById(id);
@@ -88,12 +108,9 @@ namespace WebApplication1.Controllers
             return View(MapEntityToVM(product));
         }
 
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Description,BuyPrice,SellPrice,Picture,CategoryId")] Product product)
+        public async Task<IActionResult> Edit(Guid id, ProductVM product)
         {
             if (id != product.Id)
             {
@@ -104,7 +121,7 @@ namespace WebApplication1.Controllers
             {
                 try
                 {
-                    _context.Update(product);
+                    _product.UpdateProduct(MapVmToDTO(product));
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -186,8 +203,6 @@ namespace WebApplication1.Controllers
         }
         private ProductVM MapEntityToVM(ProductDTO dto)
         {
-            //var picture = _product.ReadFileFromDB(dto.PictureName, dto.Picture, dto.PictureFormat);
-            //var img = _product.ConvertImageFromIForm(dto.Picture);
             var product = new ProductVM()
             {
                 Id = dto.Id,
@@ -203,12 +218,15 @@ namespace WebApplication1.Controllers
 
             return product;
         }
-        //public ActionResult GetImg(ProductDTO dto)
-        //{
-        //    using (var ms = new MemoryStream(dto.Picture))
-        //    {
-        //        return Image.FromStream(ms);
-        //    }
-        //}
+
+        public IActionResult Create(string id = null)
+        {
+            List<Category> categories = _context.Category.ToList();
+            if (id != null)
+            {
+                ViewBag.ListOfCategories = new SelectList(categories, "Id", "Name");
+            }
+            return View();
+        }
     }
 }
