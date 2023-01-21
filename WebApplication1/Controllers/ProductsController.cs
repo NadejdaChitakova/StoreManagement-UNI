@@ -61,21 +61,22 @@ namespace WebApplication1.Controllers
             return View(products);
         }
 
-        public async Task<IActionResult> Details(Guid? id)
+        public async Task<IActionResult> Details(Guid id)
         {
             if (id == null || _context.Product == null)
             {
                 return NotFound();
             }
 
-            var product = await _context.Product
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = _product.FindProductById(id);
+            var productVM = MapEntityToVM(product);
+            productVM.CategoryName = _context.Category.Where(x => x.Id.ToString() == product.CategoryId).Select(x => x.Name).FirstOrDefault();
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(productVM);
         }
 
 
