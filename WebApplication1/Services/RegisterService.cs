@@ -12,18 +12,21 @@ namespace WebApplication1.Services
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ApplicationDBContext _applicationDBContext;
+        private readonly IFileService _fileService;
 
-        public RegisterService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ApplicationDBContext applicationDBContext)
+        public RegisterService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ApplicationDBContext applicationDBContext, IFileService fileService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _applicationDBContext = applicationDBContext;
+            _fileService = fileService;
         }
 
         public async Task<StatusCodeResult> RegisterAsync(RegisterDTO registerDTO)
         {
             if (registerDTO.UserName == null || registerDTO.PasswordHash == null || registerDTO.Email == null)
             {
+                _fileService.WriteOnFile(DateTime.Now.ToString() + "The username, password or email has not value");
                 return new BadRequestResult();
             }
 
@@ -31,9 +34,10 @@ namespace WebApplication1.Services
 
             if (userInDB == null)
             {
+                _fileService.WriteOnFile(DateTime.Now.ToString() + "The user exist in the database");
                 return new NotFoundResult();
             }
-            var user = new User // TODO: use automapper
+            var user = new User
             {
                 Id = registerDTO.Id,
                 UserName = registerDTO.UserName,
@@ -47,7 +51,10 @@ namespace WebApplication1.Services
             if (result.Succeeded)
             {
                 statusCode = StatusCodes.Status200OK;
-                await _signInManager.SignInAsync(user, false);
+            }
+            else
+            {
+            _fileService.WriteOnFile(DateTime.Now.ToString() + "The user exist in the database");
             }
             return new StatusCodeResult(statusCode);
         }

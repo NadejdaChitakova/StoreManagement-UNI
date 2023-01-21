@@ -10,10 +10,12 @@ namespace WebApplication1.Services
     public class ProductService : IProduct
     {
         private readonly ApplicationDBContext _applicationDBContext;
+        private readonly IFileService _fileService;
 
-        public ProductService(ApplicationDBContext applicationDBContext)
+        public ProductService(ApplicationDBContext applicationDBContext, IFileService fileService)
         {
             _applicationDBContext = applicationDBContext;
+            _fileService = fileService;
         }
 
         public List<ProductDTO> GetProducts()
@@ -62,6 +64,7 @@ namespace WebApplication1.Services
 
             if (codeIsUnique != null)
             {
+                _fileService.WriteOnFile(DateTime.Now.ToString() + "The product code is not unique");
                 return new StatusCodeResult(StatusCodes.Status406NotAcceptable);
             }
 

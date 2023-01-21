@@ -1,19 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers
 {
     public class LogoutController : Controller
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        public LogoutController(SignInManager<IdentityUser> signInManager)
+        public LogoutController()
         {
-            _signInManager = signInManager;
         }
 
         public async Task<IActionResult> Index()
         {
-            await _signInManager.SignOutAsync();
+            LoginService.loggedIn = null;
             return View();
         }
     }

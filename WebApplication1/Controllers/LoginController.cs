@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Models;
 using WebApplication1.Models.Entity;
@@ -23,7 +24,7 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginVM model) //TODO: MAKE LOGGIN TO WORK
+        public async Task<ActionResult> Login(LoginVM model)
         {
             if (ModelState.IsValid)
             {
@@ -32,16 +33,14 @@ namespace WebApplication1.Controllers
                     Email = model.Email,
                     Password = model.Password,
                 };
+
                 var result = await _loginService.Login(user);
 
                 if (result.StatusCode == StatusCodes.Status200OK)
                 {
                     return RedirectToAction("Index", "Products", new { area = "" });
                 }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid Login Attempt");
-                }
+
             }
             return View(model);
         }

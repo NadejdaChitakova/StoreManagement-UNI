@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Services;
@@ -12,6 +14,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IRegister, RegisterService>();
 builder.Services.AddScoped<ILogin, LoginService>();
 builder.Services.AddScoped<IProduct, ProductService>();
+builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AppConnectionString")));
 
